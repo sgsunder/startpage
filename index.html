@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Start Page</title>
+    
+    <!-- Metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- General Stylesheets -->
+    <link rel="stylesheet" href="css/normalize.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto+Mono:400,500" rel="stylesheet">
+    <!-- jQuery sources-->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <!-- jQueryUI sources-->
+    <script src="script/jquery-ui.js"></script>
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    
+    <!-- stylesheet -->
+    <style>
+		html {
+			font-size: 23px;
+			height: 100vh;
+		}
+
+		body {
+			color: #F0EEE3;
+			background: #0b111c
+		}
+
+		.hwrapper {
+			position: absolute;
+			top: 50%;
+			margin-top: -200px;
+			/* half of #content height*/
+			left: 0;
+			width: 100%;
+		}
+
+		.vwrapper {
+			width: 1024px;
+			margin-left: auto;
+			margin-right: auto;
+			height: 395px;
+			/* border: 1px solid #000000; */
+		}
+
+		.searchbox {
+			width: 100%;
+			padding: 15px;
+			background-color: #182130;
+			color: #F0EEE3;
+			border: none;
+			font-family: 'Roboto Mono', monospace;
+			transition: 0.2s;
+		}
+
+		.searchbox:focus {
+			background-color: #0b111c;
+		}
+
+		.searchbox:focus::-moz-placeholder {
+			color: transparent;
+		}
+	</style>
+    
+    <!-- autocomplete javascript -->
+    <script>
+    	$(function() {
+    		var basenames = [];
+    		$.getJSON("websites.json", function(json) {
+    			json.forEach(function(element) {
+    				basenames.push(element.name);
+    			});
+    			basenames.sort();
+    		});
+    		
+    		$("#autocomplete-1").autocomplete({
+    			source: function(request, response) {
+    				var filteredArray = $.map(basenames, function(item) {
+    					if(item.indexOf(request.term) == 0) {
+    						return item;
+    					}
+    					else {
+    						return null;
+    					}
+    				});
+    				response(filteredArray);
+    			},
+    			autoFocus: true
+    		});
+    	});
+    </script>
+    
+  </head>
+  
+  <body>
+    <div class="hwrapper">
+    	<div class="vwrapper">
+			<input id="autocomplete-1" class="searchbox"  placeholder=">" autofocus>
+		</div>
+    </div>
+    
+    <!--gotobookmark javascript -->
+    <script>
+    	document.getElementById("autocomplete-1").addEventListener("keydown", function(e) {
+    		// ENTER key: complete form action
+    		if (e.keyCode == 13) {
+    			gotoBookmark(e);
+    		}
+    		
+    		// TAB key: return focus to form, except when field is empty
+    		if (e.keyCode == 9) {;
+    			if (e.target.value != "") {
+    				document.getElementById("autocomplete-1").focus();
+    				e.preventDefault();
+    			}
+    		}
+    	});
+    	
+    	var basenames = [];
+    	var links = [];
+    	$.getJSON("websites.json", function(json) {
+    		json.forEach(function(element) {
+    			basenames.push(element.name);
+    			links.push(element.link);
+    		});
+		})
+    	
+    	function gotoBookmark(e) {
+    		var text = e.target.value;
+    		var index = basenames.indexOf(text.toLowerCase());
+    		var link;
+    		
+    		if (index == -1) {
+    			if (text.startsWith("?")) {
+    				// Is the input a search query?
+    				searchQuery = text.substr(1);
+    				link = "http://www.google.com/search?q=" + searchQuery;
+    			} else {
+    				// Assume a URL was entered
+    				link = text;
+    			}
+    		} else {
+    			// Go to the specified bookmark
+    			link = links[index];;
+    		}
+    		
+    		window.location.href = link;
+    	}
+    </script> 
+  </body>
+</html>
